@@ -39,14 +39,8 @@ async def websocket_endpoint(
                     command = message_data.get("message")
                     
                     if target and command:
-                        if target in manager.active_connections:
-                            logger.debug(f"LLM -> {target}: {command}")
-                            await manager.send_message(command, target)
-                        else:
-                            logger.warning(f"Target '{target}' not connected")
-                            await manager.send_message(
-                                f"Target '{target}' is not connected.", CONTROLLER_ID
-                                )
+                        logger.debug(f"LLM -> Redis Pub/Sub -> ({target}): {command}")
+                        await manager.send_message(command, target)
                     else:
                         await manager.send_message(
                             "Invalid JSON. Need 'target' and 'message'", CONTROLLER_ID
@@ -56,12 +50,9 @@ async def websocket_endpoint(
 
             # --- Logic for Clients (Unity/Devices) ---
             else:
-                if CONTROLLER_ID in manager.active_connections:
-                    logger.debug(f"{client_id} -> LLM: {data}")
-                    response = json.dumps({"sender": client_id, "message": data})
-                    await manager.send_message(response, CONTROLLER_ID)
-                else:
-                    logger.warning(f"LLM not connected, dropping message from {client_id}")
+                logger.debug(f"{client_id} -> Redis Pub/Sub -> ({CONTROLLER_ID}): {data}")
+                response = json.dumps({"sender": client_id, "message": data})
+                await manager.send_message(response, CONTROLLER_ID)
                 
     except WebSocketDisconnect:
         manager.disconnect(client_id)

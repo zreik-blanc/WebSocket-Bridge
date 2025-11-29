@@ -208,3 +208,6 @@ __marimo__/
 
 # Local websocket test server files
 tests/
+
+# Local development idea files
+features.md

@@ -5,23 +5,16 @@ services:
     restart: unless-stopped
     expose:
       - "8000"
-    # dont forget to remove volumes in demo showcase
-    volumes:
-      - ./server:/src
     env_file:
       - ./server/.env
     depends_on:
       - redis
-    # dont forget to remove --reload in demo showcase
-    command: [ "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload" ]
+    command: [ "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000" ]
 
   redis:
     image: redis:alpine
     container_name: redis_broker
     restart: unless-stopped
-    # dont forget to remove ports in demo showcase. dont expose ports in production
-    ports:
-      - "6379:6379"
     command: redis-server --save 60 1 --loglevel warning
 
   nginx:
