@@ -14,7 +14,7 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 logger = logging.getLogger("app")
-                
+
 # --- Constants & Secrets ---
 CONTROLLER_ID = "LLM"
 LLM_SECRET_KEY = os.environ.get("LLM_SECRET_KEY")

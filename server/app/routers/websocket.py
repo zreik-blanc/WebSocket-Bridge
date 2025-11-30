@@ -28,7 +28,7 @@ async def websocket_endpoint(
     await manager.connect(websocket, client_id)
     logger.info(f"Client connected: {client_id}")
 
-    try:            
+    try:
         while True:
             data = await websocket.receive_text()
 
@@ -48,7 +48,7 @@ async def websocket_endpoint(
                         )
                 except json.JSONDecodeError:
                     await manager.send_message("Invalid JSON format.", CONTROLLER_ID)
-                
+
             # --- Logic for Clients (Unity/Devices) ---
             else:
                 logger.debug(
