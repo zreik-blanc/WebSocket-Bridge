@@ -1,7 +1,31 @@
 services:
+  traefik:
+    image: traefik:v3.6.2
+    container_name: traefik_proxy
+    restart: unless-stopped
+    command:
+      - "--api.insecure=false"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      # EntryPoints
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      # HTTP -> HTTPS
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      # (Resolver) Settings - Let's Encrypt
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.email=mefenewton@gmail.com"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80" # Default HTTP port
+      - "443:443" # Default HTTPS port
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./letsencrypt:/letsencrypt # Certificates folder
+
   llm-server:
     build: ./server
-    container_name: websocket_server
     restart: unless-stopped
     expose:
       - "8000"
@@ -9,21 +33,17 @@ services:
       - ./server/.env
     depends_on:
       - redis
-    command: [ "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000" ]
+    command: [ "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers" ]
+    
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.llm.rule=Host(`bm201proje.duckdns.org`)"
+      - "traefik.http.routers.llm.entrypoints=websecure"
+      - "traefik.http.routers.llm.tls.certresolver=myresolver"
+      - "traefik.http.services.llm.loadbalancer.server.port=8000"
 
   redis:
     image: redis:alpine
     container_name: redis_broker
     restart: unless-stopped
-    command: redis-server --save 60 1 --loglevel warning
-
-  nginx:
-    image: nginx:alpine
-    container_name: nginx_proxy
-    restart: unless-stopped
-    volumes:
-      - ./server/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-    ports:
-      - "80:80" # The only public entry point
-    depends_on:
-      - llm-server
+    command: redis-server --save "" --loglevel warning
