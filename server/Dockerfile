@@ -17,7 +17,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
 FROM python:3.12-slim AS production
 
 LABEL maintainer="BM201 Team" \
-      version="1.0" \
+      version="1.0.3" \
       description="FastAPI WebSocket Server"
 
 # Create a non-root user with an explicit UID
