@@ -15,7 +15,7 @@ async def validate_auth(
             is_authorized = True
 
     if not is_authorized:
-        logger.warning(f"Unauthorized connection attempt: {client_id}")
+        logger.warning("Unauthorized connection attempt: %s", client_id)
         await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
         return False
 

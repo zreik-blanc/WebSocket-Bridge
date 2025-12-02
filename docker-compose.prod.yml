@@ -43,7 +43,7 @@ services:
       - "traefik.http.services.llm.loadbalancer.server.port=8000"
 
   redis:
-    image: redis:alpine
+    image: redis:alpine3.22
     container_name: redis_broker
     restart: unless-stopped
     command: redis-server --save "" --loglevel warning

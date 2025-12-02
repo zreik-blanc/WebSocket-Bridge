@@ -20,13 +20,13 @@ async def websocket_endpoint(
 
     # 2. Duplicate Connection Check
     if client_id in manager.active_connections:
-        logger.warning(f"Client ID '{client_id}' is already connected.")
+        logger.warning("Client ID '%s' is already connected.", client_id)
         await websocket.close(code=status.WS_1000_NORMAL_CLOSURE)
         return
 
     # 3. Connection Accepted
     await manager.connect(websocket, client_id)
-    logger.info(f"Client connected: {client_id}")
+    logger.info("Client connected: %s", client_id)
 
     try:
         while True:
@@ -40,7 +40,7 @@ async def websocket_endpoint(
                     command = message_data.get("message")
 
                     if target and command:
-                        logger.debug(f"LLM -> Redis Pub/Sub -> ({target}): {command}")
+                        logger.debug("LLM -> Redis Pub/Sub -> (%s): %s", target, command)
                         await manager.send_message(command, target)
                     else:
                         await manager.send_message(
@@ -52,11 +52,11 @@ async def websocket_endpoint(
             # --- Logic for Clients (Unity/Devices) ---
             else:
                 logger.debug(
-                    f"{client_id} -> Redis Pub/Sub -> ({CONTROLLER_ID}): {data}"
+                    "%s -> Redis Pub/Sub -> (%s): %s", client_id, CONTROLLER_ID, data
                 )
                 response = json.dumps({"sender": client_id, "message": data})
                 await manager.send_message(response, CONTROLLER_ID)
 
     except WebSocketDisconnect:
         manager.disconnect(client_id)
-        logger.info(f"Client disconnected: {client_id}")
+        logger.info("Client disconnected: %s", client_id)
