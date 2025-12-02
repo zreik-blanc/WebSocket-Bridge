@@ -19,3 +19,4 @@ This project contains a web server that acts as a bridge between an LLM (Large L
 2. Attach `CommandListener.cs` to a GameObject in your scene.
 
 how it did went throuht brooo
+ok i fixed it
