@@ -1,7 +1,7 @@
+from typing import Dict
 import asyncio
 import redis.asyncio as redis
 
-from typing import Dict
 from redis.asyncio.client import PubSub
 from fastapi import WebSocket
 from .config import REDIS_URL, logger
@@ -49,7 +49,7 @@ class ConnectionManager:
                 await pubsub.unsubscribe(client_id)
                 await pubsub.close()
             except Exception as e:
-                logger.error(f"Error cleaning up pubsub for {client_id}: {e}")
+                logger.error("Error cleaning up pubsub for %s: %s", client_id, e)
             finally:
                 del self.pubsub_connections[client_id]
 
@@ -67,7 +67,7 @@ class ConnectionManager:
         try:
             pubsub = self.pubsub_connections.get(client_id)
             if not pubsub:
-                logger.error(f"No pubsub connection found for {client_id}")
+                logger.error("No pubsub connection found for %s", client_id)
                 return
 
             async for message in pubsub.listen():
@@ -81,9 +81,9 @@ class ConnectionManager:
                         break
 
         except asyncio.CancelledError:
-            logger.info(f"Redis listener cancelled for {client_id}")
+            logger.info("Redis listener cancelled for %s", client_id)
         except Exception as e:
-            logger.error(f"Redis listener error for {client_id}: {e}")
+            logger.error("Redis listener error for %s: %s", client_id, e)
 
 
 manager = ConnectionManager()

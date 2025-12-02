@@ -1,5 +1,5 @@
 # Build stage
-FROM python:3.12-slim AS builder
+FROM python:3.12-alpine AS builder
 
 WORKDIR /build
 
@@ -14,15 +14,11 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 # Production stage
-FROM python:3.12-slim AS production
-
-LABEL maintainer="BM201 Team" \
-      version="1.0.3" \
-      description="FastAPI WebSocket Server"
+FROM python:3.12-alpine AS production
 
 # Create a non-root user with an explicit UID
-RUN addgroup --system --gid 1001 appgroup && \
-    adduser --system --uid 1001 --gid 1001 appuser
+RUN addgroup -g 1001 -S appgroup && \
+    adduser -u 1001 -S -G appgroup appuser
 
 WORKDIR /src
 
