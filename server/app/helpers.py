@@ -141,7 +141,7 @@ def generate_speech(text: str) -> bytes:
             return response.content
         else:
             print(f"Fish Speech API Error: {response.status_code} - {response.text}")
-            return None
+            return b""
     except Exception as e:
         print(f"TTS Error: {e}")
-        return None
+        return b""

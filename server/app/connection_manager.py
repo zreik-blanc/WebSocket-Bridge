@@ -19,7 +19,7 @@ class ConnectionManager:
        the appropriate WebSocket client.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.active_connections: Dict[str, WebSocket] = {}
         self.pubsub_connections: Dict[str, PubSub] = {}
         self.redis_client = redis.from_url(
