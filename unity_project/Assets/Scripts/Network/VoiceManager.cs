@@ -44,8 +44,8 @@ public class VoiceManager : MonoBehaviour
     void StartRecording()
     {
         isRecording = true;
-        // Maksimum 10 saniyelik, 44100 Hz örnekleme hızıyla kayıt
-        recording = Microphone.Start(microphoneDevice, false, 10, 44100);
+        // Maksimum 10 saniyelik, 24000 Hz örnekleme hızıyla kayıt
+        recording = Microphone.Start(microphoneDevice, false, 10, 24000);
         Debug.Log("Kayıt Başladı...");
     }
 
@@ -67,8 +67,12 @@ public class VoiceManager : MonoBehaviour
         WWWForm form = new WWWForm();
         form.AddBinaryData("file", audioData, "recording.wav", "audio/wav");
 
+        // DownloadHandlerAudioClip kullanarak direkt ses dosyasını indiriyoruz
         using (UnityWebRequest www = UnityWebRequest.Post(backendUrl, form))
         {
+            DownloadHandlerAudioClip downloadHandler = new DownloadHandlerAudioClip(www.uri, AudioType.WAV);
+            www.downloadHandler = downloadHandler;
+
             yield return www.SendWebRequest();
 
             if (www.result != UnityWebRequest.Result.Success)
@@ -77,51 +81,28 @@ public class VoiceManager : MonoBehaviour
             }
             else
             {
-                string jsonResponse = www.downloadHandler.text;
-                Debug.Log("Sunucu Cevabı: " + jsonResponse);
+                // Gelen veriyi ses klibine çevir
+                AudioClip receivedClip = downloadHandler.audioClip;
 
-                // Gelen komutu işle
-                ProcessCommand(jsonResponse);
+                if (receivedClip != null)
+                {
+                    Debug.Log("Ses dosyası başarıyla alındı ve oynatılıyor.");
+                    
+                    // Sesi oynatmak için bir AudioSource bileşeni oluştur veya var olanı kullan
+                    AudioSource audioSource = GetComponent<AudioSource>();
+                    if (audioSource == null)
+                    {
+                        audioSource = gameObject.AddComponent<AudioSource>();
+                    }
+
+                    audioSource.clip = receivedClip;
+                    audioSource.Play();
+                }
+                else
+                {
+                    Debug.LogWarning("Ses dosyası alınamadı veya bozuk.");
+                }
             }
-        }
-    }
-
-    void ProcessCommand(string json)
-    {
-        // Burada gelen JSON'ı parse edip (JsonUtility kullanarak) eyleme dökeceksiniz.
-        // Örnek: {"action": "open_ac"}
-        Debug.Log("Eylem gerçekleştiriliyor" + json);
-
-        // Basit bir örnek parse (daha sağlam bir JSON yapısı kurmalısınız)
-        if (json.Contains("klima_ac"))
-        {
-            // Klima açma fonksiyonunu çağır
-            Debug.Log("Klima Açıldı!");
-        }
-        else if (json.Contains("klima_kapat"))
-        {
-            Debug.Log("Klima kapandı!");
-        }
-        else if (json.Contains("isik_ac"))
-        {
-            Debug.Log("Işıklar açıldı");
-        }
-        else if (json.Contains("make_coffe"))
-        {
-            Debug.Log("Kahve yapılıyor");
-        }
-        else if (json.Contains("Turn_on_music"))
-        {
-            Debug.Log("Müzik açıldı!");
-        }
-        else if (json.Contains("Turn_off_music"))
-        {
-            Debug.Log("Müzik kapandı!");
-        }
-        else if (json.Contains("isik_kapat"))
-        {
-            // Işık kapatma fonksiyonunu çağır
-            Debug.Log("Işıklar Kapandı!");
         }
     }
 }
