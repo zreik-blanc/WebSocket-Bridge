@@ -36,9 +36,14 @@ services:
       - "${WEB_SOCKET_PORT}"
     env_file:
       - ./.env
+    command: [ "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "${WEB_SOCKET_PORT}" ]
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+      - FISH_SPEECH_API_URL=http://fish-speech:8080/v1/tts
     depends_on:
       - redis
-    command: [ "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "${WEB_SOCKET_PORT}" ]
+      - ollama
+      - fish-speech
     
     labels:
       # Traefik Routing
@@ -60,6 +65,27 @@ services:
     networks:
       - internal_net
     command: redis-server --save "" --loglevel warning --requirepass "${REDIS_PASSWORD}"
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama_llm
+    restart: unless-stopped
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - internal_net
+
+  fish-speech:
+    image: fishaudio/fish-speech:latest-server-cpu
+    container_name: fish_speech_tts
+    restart: unless-stopped
+    volumes:
+      - ./fish_speech_models:/app/checkpoints
+    networks:
+      - internal_net
+
+volumes:
+  ollama_data:
 
 networks:
   proxy_net:

@@ -23,9 +23,14 @@ services:
       - ./server:/src
     env_file:
       - ./.env
+    command: [ "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload" ]
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+      - FISH_SPEECH_API_URL=http://fish-speech:8080/v1/tts
     depends_on:
       - redis
-    command: [ "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload" ]
+      - ollama
+      - fish-speech
     
     labels:
       - "traefik.enable=true"
@@ -43,3 +48,24 @@ services:
     container_name: redis_broker
     restart: unless-stopped
     command: redis-server --save "" --loglevel warning --requirepass "${REDIS_PASSWORD}"
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama_llm
+    restart: unless-stopped
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+
+  fish-speech:
+    image: fishaudio/fish-speech:latest-server-cpu
+    container_name: fish_speech_tts
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./fish_speech_models:/app/checkpoints
+
+volumes:
+  ollama_data:
