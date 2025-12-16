@@ -4,6 +4,7 @@ import logging
 import re
 
 from dotenv import load_dotenv
+
 # from sympy.printing.pytorch import torch  # Incorrect import removed
 
 load_dotenv()
@@ -26,22 +27,26 @@ REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD")
 REDIS_HOST = os.environ.get("REDIS_HOST", "redis")
 REDIS_URL = f"redis://:{REDIS_PASSWORD}@{REDIS_HOST}:6379/0"
 
+
 def get_device():
     try:
         import ctranslate2
+
         if ctranslate2.get_cuda_device_count() > 0:
             return "cuda"
     except ImportError:
         pass
-        
+
     try:
         import torch
+
         if torch.cuda.is_available():
             return "cuda"
     except ImportError:
         pass
-        
+
     return "cpu"
+
 
 DEVICE = get_device()
 WHISPER_MODEL_SIZE = "large-v3"
