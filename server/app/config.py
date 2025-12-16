@@ -4,7 +4,7 @@ import logging
 import re
 
 from dotenv import load_dotenv
-from sympy.printing.pytorch import torch
+# from sympy.printing.pytorch import torch  # Incorrect import removed
 
 load_dotenv()
 
@@ -23,9 +23,27 @@ CONTROLLER_ID = "LLM"
 LLM_SECRET_TOKEN = os.environ.get("LLM_SECRET_TOKEN")
 UNITY_CLIENT_TOKEN = os.environ.get("UNITY_CLIENT_TOKEN")
 REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD")
-REDIS_URL = f"redis://:{REDIS_PASSWORD}@redis:6379/0"
+REDIS_HOST = os.environ.get("REDIS_HOST", "redis")
+REDIS_URL = f"redis://:{REDIS_PASSWORD}@{REDIS_HOST}:6379/0"
 
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+def get_device():
+    try:
+        import ctranslate2
+        if ctranslate2.get_cuda_device_count() > 0:
+            return "cuda"
+    except ImportError:
+        pass
+        
+    try:
+        import torch
+        if torch.cuda.is_available():
+            return "cuda"
+    except ImportError:
+        pass
+        
+    return "cpu"
+
+DEVICE = get_device()
 WHISPER_MODEL_SIZE = "large-v3"
 OLLAMA_MODEL = "llama3.2"
 OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "http://localhost:11434")

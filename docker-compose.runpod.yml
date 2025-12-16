@@ -18,3 +18,29 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [gpu]
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./fish_speech_models:/app/checkpoints
+
+  redis:
+    image: redis:alpine3.22
+    restart: unless-stopped
+    command: redis-server --save "" --loglevel warning --requirepass "${REDIS_PASSWORD}"
+
+  websocket-server:
+    # Placeholder image name - replace 'yourusername' with your actual Docker Hub username
+    image: yourusername/websocket-bridge-server:latest
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./.env
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+      - FISH_SPEECH_API_URL=http://fish-speech:8080/v1/tts
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+      - ollama
+      - fish-speech
