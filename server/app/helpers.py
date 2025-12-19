@@ -137,7 +137,6 @@ def analyze_intent(text: str) -> dict:
         intent = json.loads(content)
 
         # Add response to history
-        assistant_reply = intent.get("reply", "")
         conversation_history.append({"role": "assistant", "content": content})
 
         return intent
