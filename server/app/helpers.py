@@ -104,27 +104,47 @@ Output strictly JSON.
 """
 
 
+MAX_HISTORY_LENGTH = 6 
+conversation_history: list = []
+
+
 def analyze_intent(text: str) -> dict:
     """
-    Analyzes the text using Llama 3.2 via Ollama to determine the intent.
+    Analyzes the text using Qwen 2.5 via Ollama to determine the intent.
+    Maintains conversation history for context.
     """
+    global conversation_history
     client = ollama.Client(host=OLLAMA_HOST)
 
+    # Add user message to history
+    conversation_history.append({"role": "user", "content": f"Command: {text}"})
+
+    # keep only last N messages
+    if len(conversation_history) > MAX_HISTORY_LENGTH:
+        conversation_history = conversation_history[-MAX_HISTORY_LENGTH:]
+
     try:
+        # Build messages with system prompt + conversation history
+        messages = [{"role": "system", "content": SYSTEM_PROMPT}] + conversation_history
+
         response = client.chat(
             model=OLLAMA_MODEL,
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": f"Command: {text}"},
-            ],
+            messages=messages,
             format="json",
         )
 
         content = response["message"]["content"]
         intent = json.loads(content)
+
+        # Add response to history
+        conversation_history.append({"role": "assistant", "content": content})
+
         return intent
     except Exception as e:
         print(f"LLM Error: {e}")
+
+        if conversation_history and conversation_history[-1]["role"] == "user":
+            conversation_history.pop()
         return {"command": "UNKNOWN", "reply": "Bir hata oluştu.", "error": str(e)}
 
 
