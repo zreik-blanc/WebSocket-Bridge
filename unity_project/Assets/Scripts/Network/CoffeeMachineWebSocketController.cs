@@ -10,15 +10,10 @@ public class CoffeeMachineWebSocketController : MonoBehaviour
 {
     [Header("AWS Connection Settings")]
     public string uniqueClientID = "coffee_machine_client";
-    public string awsBaseUrl = "bm201proje.duckdns.org";
-    public string authToken = "SuperSecretClientKey1896417854581767284";
+    public string authToken = "{your_auth_key}";
 
     [Header("Device Specific Control")]
     public AudioSource brewSound;
-
-    public KeyCode toggleKey = KeyCode.C;
-   
-
     private ClientWebSocket clientWebSocket;
     private CancellationTokenSource cts = new CancellationTokenSource();
     private string wssUrl;
@@ -28,25 +23,13 @@ public class CoffeeMachineWebSocketController : MonoBehaviour
 
     void Start()
     {
-        string cleanedBaseUrl = awsBaseUrl.Trim();
+        string cleanedBaseUrl = Constants.url.Trim();
         string cleanedClientID = uniqueClientID.Trim();
 
         wssUrl = $"wss://{cleanedBaseUrl}/ws/{cleanedClientID}";
         Debug.Log($"Kahve Makinesi URL: {wssUrl}");
 
         ConnectToAWS();
-    }
-
-    void Update()
-    {
-        // Yerel Kontrol Tusu: Sunucuya durum deðiþtirme komutu gönderir.
-        if (Input.GetKeyDown(toggleKey))
-        {
-            string commandState = isBrewing ? "0" : "1";
-
-            SendMessage($"{{ \"command\": \"set_state\", \"device\": \"{uniqueClientID}\", \"value\": \"{commandState}\" }}");
-        }
-
     }
 
     void OnDestroy()

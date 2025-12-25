@@ -9,14 +9,11 @@ public class TelevisionWebSocketController : MonoBehaviour
 {
     [Header("AWS Connection Settings")]
     public string uniqueClientID = "television_client";
-    public string awsBaseUrl = "bm201proje.duckdns.org";
-    public string authToken = "SuperSecretClientKey1896417854581767284";
+    public string authToken = "{your_auth_key}";
 
     [Header("Device Specific Control")]
     public GameObject screenObject;
     public UnityEngine.Video.VideoPlayer videoPlayer; 
-
-    public KeyCode toggleKey = KeyCode.T;
 
     private ClientWebSocket clientWebSocket;
     private CancellationTokenSource cts = new CancellationTokenSource();
@@ -26,7 +23,7 @@ public class TelevisionWebSocketController : MonoBehaviour
 
     void Start()
     {
-        string cleanedBaseUrl = awsBaseUrl.Trim();
+        string cleanedBaseUrl = Constants.url.Trim();
         string cleanedClientID = uniqueClientID.Trim();
 
         wssUrl = $"wss://{cleanedBaseUrl}/ws/{cleanedClientID}";
@@ -39,21 +36,6 @@ public class TelevisionWebSocketController : MonoBehaviour
 
         // Uygulama basladýgýnda sunucumuza otomatik baglanýyoruz.
         ConnectToAWS();
-    }
-
-    void Update()
-    {
-        // Yerel Kontrol Tuþu: Sunucuya durum degistirme komutu gönderir.
-        if (Input.GetKeyDown(toggleKey))
-        {
-            bool currentState = screenObject.activeSelf;
-            string commandState = currentState ? "0" : "1";
-
-            // Komut formatýný sunucunuzun beklediði JSON formatýna göre düzenledik
-            SendMessage($"{{ \"command\": \"set_state\", \"device\": \"{uniqueClientID}\", \"value\": \"{commandState}\" }}");
-        }
-
-       
     }
 
     void OnDestroy()

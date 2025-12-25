@@ -11,16 +11,11 @@ public class SpeakerWebSocketController : MonoBehaviour
     [Header("AWS Connection Settings")]
     
     public string uniqueClientID = "speaker_group_client";
-    public string awsBaseUrl = "bm201proje.duckdns.org";
-    public string authToken = "SuperSecretClientKey1896417854581767284";
+    public string authToken = "{your_auth_key}";
 
     [Header("Device Specific Control")]
 
     public List<AudioSource> speakers;
-
-    public KeyCode toggleKey = KeyCode.M; // 'M' tuþu
-    
-
     private ClientWebSocket clientWebSocket;
     private CancellationTokenSource cts = new CancellationTokenSource();
     private string wssUrl;
@@ -30,7 +25,7 @@ public class SpeakerWebSocketController : MonoBehaviour
 
     void Start()
     {
-        string cleanedBaseUrl = awsBaseUrl.Trim();
+        string cleanedBaseUrl = Constants.url.Trim();
         string cleanedClientID = uniqueClientID.Trim();
 
         wssUrl = $"wss://{cleanedBaseUrl}/ws/{cleanedClientID}";
@@ -52,17 +47,6 @@ public class SpeakerWebSocketController : MonoBehaviour
         ConnectToAWS();
     }
 
-    void Update()
-    {
-        if (Input.GetKeyDown(toggleKey))
-        {
-            string commandState = isSpeakersOn ? "0" : "1";
-
-            SendMessage($"{{ \"command\": \"set_state\", \"device\": \"{uniqueClientID}\", \"value\": \"{commandState}\" }}");
-        }
-
-      
-    }
 
     void OnDestroy()
     {

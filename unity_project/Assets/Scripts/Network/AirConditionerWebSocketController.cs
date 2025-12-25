@@ -10,15 +10,10 @@ public class AirConditionerWebSocketController : MonoBehaviour
 {
     [Header("AWS Connection Settings")]
     public string uniqueClientID = "air_conditioner_client";
-    public string awsBaseUrl = "bm201proje.duckdns.org";
-    public string authToken = "SuperSecretClientKey1896417854581767284";
+    public string authToken = "{your_auth_key}";
 
     [Header("Device Specific Control")]
     public AudioSource acSound;
-
-    public KeyCode toggleKey = KeyCode.A; // 'A' tuþu
-  
-
     private ClientWebSocket clientWebSocket;
     private CancellationTokenSource cts = new CancellationTokenSource();
     private string wsUrl;
@@ -28,7 +23,7 @@ public class AirConditionerWebSocketController : MonoBehaviour
 
     void Start()
     {
-        string cleanedBaseUrl = awsBaseUrl.Trim();
+        string cleanedBaseUrl = Constants.url.Trim();
         string cleanedClientID = uniqueClientID.Trim();
 
         wsUrl = $"wss://{cleanedBaseUrl}/ws/{cleanedClientID}";
@@ -42,18 +37,6 @@ public class AirConditionerWebSocketController : MonoBehaviour
         }
 
         ConnectToAWS();
-    }
-
-    void Update()
-    {
-        if (Input.GetKeyDown(toggleKey))
-        {
-            string commandState = isACOn ? "0" : "1";
-
-            SendMessage($"{{ \"command\": \"set_state\", \"device\": \"{uniqueClientID}\", \"value\": \"{commandState}\" }}");
-        }
-
-       
     }
 
     void OnDestroy()
